@@ -1,0 +1,25 @@
+rules:
+  - id: WebShell_PHP_Keywords
+    name: PHP WebShell Dangerous Functions
+    severity: critical
+    patterns:
+      - "eval("
+      - "assert("
+      - "passthru("
+      - "base64_decode("
+      - "gzuncompress("
+      - "str_rot13("
+    description: |
+      PHP webshell 常见函数特征。
+
+  - id: WebShell_Common_Patterns
+    name: Common WebShell Indicators
+    severity: high
+    patterns:
+      - "cmd="
+      - "exec="
+      - "shell="
+      - "c2VjcmV0"   # base64 for "secret"
+      - "ZXhlYw"     # base64 for "exec"
+    description: |
+      WebShell 加密/混淆关键字。
