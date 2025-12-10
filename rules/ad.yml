@@ -1,0 +1,37 @@
+# AD（常见域漏洞与错误配置）
+rules:
+  - id: AD_SeBackupPrivilege
+    name: SeBackupPrivilege Assigned to User
+    severity: critical
+    patterns:
+      - "SeBackupPrivilege"
+    description: |
+      检测 SeBackupPrivilege 权限，可用于直接读取 NTDS.dit。
+
+  - id: AD_Weak_Kerberos_Encryption
+    name: Weak Kerberos Encryption
+    severity: high
+    patterns:
+      - "RC4"
+      - "DES"
+      - "AES128"
+    description: |
+      检测弱加密 Kerberos key，可以导致 AS-REP / Kerberoast。
+
+  - id: AD_LDAP_Signing_Disabled
+    name: LDAP Signing Disabled
+    severity: high
+    patterns:
+      - "LDAP signing: disabled"
+    description: |
+      LDAP 未签名可被中间人攻击利用。
+
+  - id: AD_DCSync_or_DCShadow_Exposure
+    name: DCSync Permission Detected
+    severity: critical
+    patterns:
+      - "Replicating Directory Changes"
+      - "Replicating Directory Changes All"
+      - "Replicating Directory Changes In Filtered Set"
+    description: |
+      用户拥有 DCSync 权限，可以直接导出域密码。
