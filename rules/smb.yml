@@ -1,0 +1,28 @@
+# SMB（常见弱点、匿名登录、Sign disabled）
+rules:
+  - id: SMB_Signing_Disabled
+    name: SMB Signing Disabled
+    severity: high
+    patterns:
+      - "signing: disabled"
+      - "signing_required: false"
+    description: |
+      SMB Signing 被关闭，可能允许中间人攻击。
+
+  - id: SMBv1_Enabled
+    name: SMBv1 Enabled
+    severity: high
+    patterns:
+      - "SMBv1: enabled"
+      - "protocol: NT1"
+    description: |
+      SMBv1 已被微软废弃，存在严重漏洞（如 EternalBlue）。
+
+  - id: SMB_Anonymous_Login
+    name: SMB Anonymous / Guest Session
+    severity: medium
+    patterns:
+      - "Anonymous login successful"
+      - "Guest session allowed"
+    description: |
+      SMB 匿名访问会泄漏大量信息。
