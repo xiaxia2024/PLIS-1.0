@@ -1,0 +1,25 @@
+# 敏感信息泄露
+rules:
+  - id: InfoLeak_Dev_Files
+    name: Developer Files Exposed
+    severity: medium
+    patterns:
+      - ".git"
+      - ".svn"
+      - ".DS_Store"
+      - "/backup/"
+      - "/old/"
+    description: |
+      敏感开发文件泄露。
+
+  - id: InfoLeak_Backup_File
+    name: Backup File Found
+    severity: high
+    patterns:
+      - ".zip"
+      - ".rar"
+      - ".bak"
+      - ".old"
+      - ".swp"
+    description: |
+      泄露的备份文件常包含源代码和凭据。
