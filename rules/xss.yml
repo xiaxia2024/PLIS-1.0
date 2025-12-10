@@ -1,0 +1,36 @@
+rules:
+  - id: XSS_Reflected
+    name: Reflected XSS Indicator
+    severity: high
+    patterns:
+      - "<script>"
+      - "</script>"
+      - "alert(1)"
+      - "onerror="
+      - "onload="
+      - "<svg"
+      - "javascript:"
+    description: |
+      发现反射型 XSS 常见 payload 或标签。
+
+  - id: XSS_Stored
+    name: Stored XSS Warning
+    severity: critical
+    patterns:
+      - "<script>"
+      - "<img src=x onerror="
+      - "<iframe"
+    description: |
+      存储型 XSS 特征常出现在数据库渗透后页面回显。
+
+  - id: XSS_DOM
+    name: DOM-Based XSS Indicators
+    severity: high
+    patterns:
+      - "document.write"
+      - "location.hash"
+      - "innerHTML"
+      - "eval("
+      - "Function("
+    description: |
+      前端操作 DOM 的不安全点，常用于 DOM XSS。
