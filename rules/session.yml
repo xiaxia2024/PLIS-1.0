@@ -1,0 +1,11 @@
+# 弱 JWT / 弱 Session 规则（jwt.yml & session.yml）
+rules:
+  - id: Session_Weak_ID
+    name: Weak Session ID
+    severity: high
+    patterns:
+      - "PHPSESSID=1"
+      - "sessionid=123"
+      - "sid=1"
+    description: |
+      弱会话标识可能被伪造或预测。
