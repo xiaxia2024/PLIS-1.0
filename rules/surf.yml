@@ -1,0 +1,22 @@
+# SSRF（服务器端请求伪造）
+rules:
+  - id: SSRF_Localhost
+    name: SSRF Localhost Access
+    severity: critical
+    patterns:
+      - "127.0.0.1"
+      - "localhost"
+      - "0.0.0.0"
+      - "169.254.169.254"   # AWS metadata
+    description: |
+      对内网 IP 的访问极可能是 SSRF。
+
+  - id: SSRF_File_Scheme
+    name: SSRF via file:// scheme
+    severity: high
+    patterns:
+      - "file://"
+      - "gopher://"
+      - "dict://"
+    description: |
+      非 HTTP 协议的 SSRF 探测。
