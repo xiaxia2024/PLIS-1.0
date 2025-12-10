@@ -1,0 +1,27 @@
+# SQLi（SQL 注入）
+rules:
+  - id: SQL_Injection_Basic
+    name: Basic SQL Injection Indicators
+    severity: critical
+    patterns:
+      - "' or '1'='1"
+      - "\" or \"1\"=\"1"
+      - "or 1=1"
+      - "'--"
+      - "\"--"
+      - "union select"
+      - "sleep("
+    description: |
+      常见 SQL 注入 payload 特征。
+
+  - id: SQL_Error_Message
+    name: SQL Error Message Leakage
+    severity: medium
+    patterns:
+      - "you have an error in your sql syntax"
+      - "mysql_fetch"
+      - "pg_query"
+      - "sqlite error"
+      - "odbc_exec"
+    description: |
+      SQL 错误信息泄漏，说明存在潜在注入。
