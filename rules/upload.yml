@@ -1,0 +1,25 @@
+# 文件上传绕过（Upload Bypass）
+rules:
+  - id: Upload_WebShell_Keyword
+    name: WebShell Upload Patterns
+    severity: critical
+    patterns:
+      - "<?php"
+      - "shell"
+      - "cmd"
+      - ".php"
+      - ".jsp"
+      - ".asp"
+    description: |
+      可疑上传内容或文件扩展名。
+
+  - id: Upload_Extension_Bypass
+    name: File Extension Bypass
+    severity: high
+    patterns:
+      - ".php.jpg"
+      - ".php.png"
+      - ".phtml"
+      - ".phar"
+    description: |
+      基于扩展名绕过的木马上传手法。
