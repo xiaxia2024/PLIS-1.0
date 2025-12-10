@@ -1,3 +1,4 @@
+# XSS（跨站脚本）规则
 rules:
   - id: XSS_Reflected
     name: Reflected XSS Indicator
