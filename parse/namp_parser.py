@@ -80,7 +80,13 @@ class NmapParser:
 # ====== 调试代码（可删） ======
 
 if __name__ == "__main__":
-    with open("demo.log", "r") as f:
+    #base = os.path.dirname(os.path.abspath(__file__))   # 当前文件所在路径
+    #log_path = os.path.join(base, "..", "demo.log")     # 读取上一级目录的 demo.log
+
+    #with open(log_path, "r") as f:
+    #    raw = f.read()
+    
+    with open("demo.log", "r") as f: #在kali直接运行namp_parser.py 执行demo.log
         raw = f.read()
 
     parser = NmapParser(raw)
