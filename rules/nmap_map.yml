@@ -1,0 +1,10 @@
+# 完整 Nmap → 漏洞标签 Mapping
+map:
+  "445/tcp open": ["SMB", "ADEnum", "EternalBlue_Check"]
+  "139/tcp open": ["SMB"]
+  "389/tcp open": ["LDAP", "AD"]
+  "88/tcp open": ["Kerberos", "Kerberoast"]
+  "53/tcp open": ["DNS", "ZoneTransfer_Check"]
+  "3389/tcp open": ["RDP", "BlueKeep_Check"]
+  "135/tcp open": ["RPC", "ADEnum"]
+  "464/tcp open": ["Kerberos_PasswordChange"]
