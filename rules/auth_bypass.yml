@@ -1,0 +1,23 @@
+# 未授权访问（Auth Bypass）
+rules:
+  - id: Auth_Bypass_URL
+    name: Authentication Bypass via URL
+    severity: high
+    patterns:
+      - "admin="
+      - "debug="
+      - "bypass="
+      - "access_token="
+    description: |
+      URL 中含有绕过权限的特征。
+
+  - id: Auth_Bypass_True_Bypass
+    name: Simple True/False Authentication Bypass
+    severity: high
+    patterns:
+      - "or 1=1"
+      - "or true--"
+      - "1'='1"
+      - "' or '1'='1"
+    description: |
+      SQLi 型权限绕过。
