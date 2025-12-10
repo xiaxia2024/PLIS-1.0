@@ -1,0 +1,25 @@
+rules:
+  - id: RCE_OS_Command
+    name: OS Command Injection Suspicious Payload
+    severity: critical
+    patterns:
+      - ";whoami"
+      - "&& whoami"
+      - "| id"
+      - ";ls"
+      - "`id`"
+      - "$(id)"
+    description: |
+      常见命令注入特征。
+
+  - id: RCE_PHP_Code_Execution
+    name: PHP Code Execution Keywords
+    severity: high
+    patterns:
+      - "eval("
+      - "assert("
+      - "system("
+      - "shell_exec("
+      - "preg_replace /e"
+    description: |
+      PHP 代码执行函数。
