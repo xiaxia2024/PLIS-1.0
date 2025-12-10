@@ -1,0 +1,23 @@
+# RFI（远程文件包含）
+rules:
+  - id: RFI_Remote_URL_Loading
+    name: Remote File Inclusion with URL
+    severity: high
+    patterns:
+      - "http://"
+      - "https://"
+      - "ftp://"
+      - "php://input"
+      - "data://"
+    description: |
+      检测代码是否允许从外部 URL 加载远程脚本。
+
+  - id: RFI_Attacker_Host_Reference
+    name: Reference to Attacker-hosted files
+    severity: high
+    patterns:
+      - "raw.githubusercontent.com"
+      - "pastebin.com"
+      - "evil.com"
+    description: |
+      如果应用包含固定远程 URL，则可能存在 RFI 风险。
