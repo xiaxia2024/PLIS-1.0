@@ -1,0 +1,22 @@
+# 暴力破解（Brute Force)
+rules:
+  - id: Brute_Force_Login
+    name: Possible Login Brute Force
+    severity: high
+    patterns:
+      - "login failed"
+      - "invalid password"
+      - "too many"
+      - "attempt"
+    description: |
+      多次登录失败特征。
+
+  - id: Weak_Password_Patterns
+    name: Weak Password Detected
+    severity: medium
+    patterns:
+      - "password=123"
+      - "password=admin"
+      - "pwd=123456"
+    description: |
+      常见弱密码字典。
