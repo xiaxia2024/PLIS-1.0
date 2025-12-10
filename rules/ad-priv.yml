@@ -1,0 +1,33 @@
+# Windows / AD 特殊权限规则
+rules:
+  - id: AD_SeBackupPrivilege
+    name: SeBackupPrivilege Detected
+    severity: critical
+    patterns:
+      - "SeBackupPrivilege"
+    description: |
+      可利用 diskshadow 或 reg save 导出 NTDS.dit。
+
+  - id: AD_SeRestorePrivilege
+    name: SeRestorePrivilege Detected
+    severity: critical
+    patterns:
+      - "SeRestorePrivilege"
+    description: |
+      可结合 SeBackupPrivilege 实现写文件（Privilege Escalation）。
+
+  - id: AD_SeImpersonatePrivilege
+    name: SeImpersonatePrivilege Detected (Potato)
+    severity: critical
+    patterns:
+      - "SeImpersonatePrivilege"
+    description: |
+      可用于 JuicyPotato / RoguePotato / PrintSpoofer。
+
+  - id: AD_SeDebugPrivilege
+    name: SeDebugPrivilege
+    severity: high
+    patterns:
+      - "SeDebugPrivilege"
+    description: |
+      允许附加到 SYSTEM 进程，接近 root 权限。
