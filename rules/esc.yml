@@ -1,0 +1,27 @@
+# AD ESC1 - ESC8 攻击链检测
+rules:
+  - id: AD_ESC1
+    name: ESC1 Vulnerable Certificate Template
+    severity: critical
+    patterns:
+      - "ENROLLEE_SUPPLIES_SUBJECT"
+      - "Client Authentication"
+    description: |
+      ESC1：用户可以为任意主体生成证书。
+
+  - id: AD_ESC6
+    name: ESC6 Certificate Authority Misconfig
+    severity: high
+    patterns:
+      - "EDITF_ATTRIBUTESUBJECTALTNAME2"
+    description: |
+      ESC6：允许任意 SAN，导致域管理员身份伪造。
+
+  - id: AD_ESC8
+    name: ESC8 NTLM Relay Vulnerability
+    severity: critical
+    patterns:
+      - "HTTP"
+      - "PKINIT"
+    description: |
+      ESC8：NTLM Relay 可接管 PKINIT 身份认证。
