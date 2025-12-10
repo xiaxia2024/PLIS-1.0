@@ -1,0 +1,18 @@
+# 弱 JWT / 弱 Session 规则（jwt.yml & session.yml）
+rules:
+  - id: JWT_None_Algorithm
+    name: JWT None Algorithm Support
+    severity: critical
+    patterns:
+      - "alg\":\"none"
+    description: |
+      JWT 使用 none 算法可直接伪造 token。
+
+  - id: JWT_Weak_HS256
+    name: Weak HS256 Key Detected
+    severity: high
+    patterns:
+      - "secret"
+      - "123456"
+    description: |
+      弱密钥可直接爆破 JWT。
