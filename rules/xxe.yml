@@ -1,0 +1,21 @@
+rules:
+  - id: XXE_Doctype_Declaration
+    name: XML Doctype Declaration
+    severity: high
+    patterns:
+      - "<!DOCTYPE"
+      - "<!ENTITY"
+      - "SYSTEM \"file://"
+      - "SYSTEM 'file://"
+    description: |
+      检测 XML 文档中存在可利用的 Doctype 声明。
+
+  - id: XXE_External_Entity
+    name: External Entity Definition
+    severity: critical
+    patterns:
+      - "<!ENTITY %"
+      - "SYSTEM \"http://"
+      - "SYSTEM \"https://"
+    description: |
+      外部实体可用于 SSRF、文件读取等。
