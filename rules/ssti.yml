@@ -1,0 +1,20 @@
+rules:
+  - id: SSTI_Jinja2
+    name: Jinja2 SSTI Payload Indicators
+    severity: critical
+    patterns:
+      - "{{7*7}}"
+      - "{{config}}"
+      - "{{request}}"
+      - "{{self}}"
+    description: |
+      Jinja2 模板注入常见特征。
+
+  - id: SSTI_Java
+    name: Java SSTI Expression Language
+    severity: high
+    patterns:
+      - "${7*7}"
+      - "${T(java.lang.Runtime).getRuntime()"
+    description: |
+      Java EL 表达式注入。
