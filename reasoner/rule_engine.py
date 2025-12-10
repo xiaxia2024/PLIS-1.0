@@ -5,108 +5,114 @@ import json
 
 
 class RuleEngine:
-    def __init__(self, rule_folder="rules"):
-        self.rule_folder = rule_folder
+    def __init__(self, rules_dir="rules"):
+        self.rules_dir = rules_dir
         self.rules = self.load_all_rules()
 
     # -------------------------------------------------------
-    # 载入所有 YAML 规则
+    # 递归载入 YAML 规则
     # -------------------------------------------------------
     def load_all_rules(self):
-        rules = []
+        loaded = []
+        for root, dirs, files in os.walk(self.rules_dir):
+            for file in files:
+                if file.endswith(".yml") or file.endswith(".yaml"):
+                    path = os.path.join(root, file)
+                    with open(path, "r", encoding="utf-8") as f:
+                        data = yaml.safe_load(f) or []
 
-        for file in os.listdir(self.rule_folder):
-            if file.endswith(".yaml") or file.endswith(".yml"):
-                with open(os.path.join(self.rule_folder, file), "r") as f:
-                    data = yaml.safe_load(f)
+                        # 文件格式情况处理
+                        if isinstance(data, dict) and "rules" in data:
+                            loaded.extend(data["rules"])
+                        elif isinstance(data, list):
+                            loaded.extend(data)
+                        elif isinstance(data, dict):
+                            loaded.append(data)
 
-                    # 兼容单规则与多规则 YAML 格式
-                    if isinstance(data, dict) and "rules" in data:
-                        rules.extend(data["rules"])
-                    else:
-                        rules.append(data)
-
-        return rules
+        return loaded
 
     # -------------------------------------------------------
-    # 规则判断
+    # 稳健地 Flatten 文本
+    # -------------------------------------------------------
+    def flatten_text(self, obj):
+        if isinstance(obj, dict):
+            return " ".join(self.flatten_text(v) for v in obj.values())
+        elif isinstance(obj, list):
+            return " ".join(self.flatten_text(i) for i in obj)
+        return str(obj)
+
+    # -------------------------------------------------------
+    # 简单关键字匹配
+    # -------------------------------------------------------
+    def match(self, text):
+        matches = []
+        txt = text.lower()
+
+        for rule in self.rules:
+            patterns = rule.get("patterns", [])
+            if isinstance(patterns, str):
+                patterns = [patterns]
+
+            for p in patterns:
+                if p.lower() in txt:
+                    matches.append(rule)
+                    break
+        return matches
+
+    # -------------------------------------------------------
+    # 完整规则引擎
     # -------------------------------------------------------
     def apply_rules(self, parsed_json):
-        """
-        parsed_json: 来自 parser 的结构化数据
-        """
         results = []
-        text_raw = json.dumps(parsed_json).lower()
+        text_raw = self.flatten_text(parsed_json).lower()
 
         for rule in self.rules:
             rule_id = rule.get("id", rule.get("name", "Unknown"))
             name = rule.get("name", "Unnamed Rule")
             severity = rule.get("severity", "info")
-            patterns = rule.get("patterns", [])
-            regex_patterns = rule.get("regex", [])
-            hints = rule.get("hints", [])
+            description = rule.get("description", "")
             evidence = []
 
-            # -----------------------
-            # 1. 关键字匹配
-            # -----------------------
+            # patterns
+            patterns = rule.get("patterns", [])
+            if isinstance(patterns, str):
+                patterns = [patterns]
+
+            # regex
+            regex_patterns = rule.get("regex", [])
+            if isinstance(regex_patterns, str):
+                regex_patterns = [regex_patterns]
+
+            # hints
+            hints = rule.get("hints", [])
+            if isinstance(hints, str):
+                hints = [hints]
+
+            # match
             for p in patterns:
                 if p.lower() in text_raw:
                     evidence.append(f"keyword: {p}")
 
-            # -----------------------
-            # 2. 正则匹配
-            # -----------------------
-            for pattern in regex_patterns:
+            for r in regex_patterns:
                 try:
-                    if re.search(pattern, text_raw):
-                        evidence.append(f"regex: {pattern}")
+                    if re.search(r, text_raw):
+                        evidence.append(f"regex: {r}")
                 except re.error:
                     continue
 
-            # -----------------------
-            # 3. hints（轻量特征命中）
-            # -----------------------
             for h in hints:
                 if h.lower() in text_raw:
                     evidence.append(f"hint: {h}")
 
-            # -----------------------
-            # 如果 evidence 为空 → 规则未命中
-            # -----------------------
             if not evidence:
                 continue
 
-            # -----------------------
-            # 命中规则
-            # -----------------------
             results.append({
                 "id": rule_id,
                 "name": name,
                 "severity": severity,
-                "evidence": evidence,
+                "description": description,
+                "evidence": evidence
             })
 
         return results
-
-    # -------------------------------------------------------
-    # 自动扩展（未来版本）——从新样本自动生成新规则
-    # -------------------------------------------------------
-    def evolve_rules(self, new_patterns, rule_name="AutoLearnedPattern"):
-        """
-        未来可用：将新发现的模式写入 KB 或规则库
-        """
-        auto_rule = {
-            "id": f"auto_{rule_name}",
-            "name": rule_name,
-            "severity": "low",
-            "patterns": new_patterns,
-            "description": "Automatically learned rule",
-        }
-
-        # 写入 auto_rules.yaml
-        out_path = os.path.join(self.rule_folder, "auto_rules.yaml")
-        with open(out_path, "a") as f:
-            yaml.dump({"rules": [auto_rule]}, f)
-
-        return auto_rule
