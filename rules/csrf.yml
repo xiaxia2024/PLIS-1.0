@@ -1,0 +1,25 @@
+# CSRF（跨站请求伪造）— csrf.yml
+rules:
+  - id: CSRF_Missing_Token
+    name: Missing CSRF Token
+    severity: medium
+    patterns:
+      - "POST"
+      - "login"
+      - "update"
+      - "modify"
+    hints:
+      - "no csrf token"
+      - "csrf disabled"
+    description: |
+      当请求敏感接口无 token 参数时触发。
+
+  - id: CSRF_Get_Modify
+    name: Dangerous GET Modifies State
+    severity: high
+    patterns:
+      - "?delete="
+      - "?password="
+      - "?update="
+    description: |
+      GET 请求不应修改状态，可被用来构造 CSRF。
