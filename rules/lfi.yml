@@ -1,0 +1,25 @@
+# LFI（本地文件包含）
+rules:
+  - id: LFI_Common_Patterns
+    name: Local File Inclusion Common Indicators
+    severity: high
+    patterns:
+      - "../"
+      - "..\\"
+      - "/etc/passwd"
+      - "/proc/self/environ"
+      - "php://filter"
+      - "php://input"
+      - "expect://"
+    description: |
+      检测输入中常见的目录穿越与文件包含特征。
+
+  - id: LFI_Nginx_Path_Normalization
+    name: Nginx Path Bypass Indicators
+    severity: medium
+    patterns:
+      - "%2e%2e%2f"
+      - "%2e/"
+      - "%c0%af"
+    description: |
+      检测编码绕过 LFI 的常用方式。
