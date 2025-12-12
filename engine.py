@@ -10,6 +10,7 @@ from parse.nmap_parser import NmapParser
 from engine.rule_engine import RuleEngine
 from engine.reasoner import Reasoner
 from renderer.output_renderer import OutputRenderer
+from kb.kb import KnowledgeBase
 
 
 # ============================================================
@@ -37,6 +38,9 @@ class Engine:
     def __init__(self, log_path, rules_dir="rules"):
         self.log_path = log_path
         self.rules_dir = rules_dir
+
+        self.result = {}
+        self.kb = KnowledgeBase()
 
         self.parser = None
         self.parsed_json = None
@@ -90,6 +94,18 @@ class Engine:
         )
 
         # --------------------------------------------
+        # Step 5.6. 自动学习阶段(new add)
+        # --------------------------------------------
+        self.result = {
+            "parsed": parsed_json,
+            "rule_hits": rule_hits,
+            "reasoning": explanations
+        }
+        self.auto_learn(parsed_json, rule_hits)
+
+        return self.result
+
+        # --------------------------------------------
         # Step 6. Renderer 输出
         # --------------------------------------------
         renderer = OutputRenderer()
@@ -127,3 +143,35 @@ if __name__ == "__main__":
 
     engine = Engine(log_file)
     engine.run()
+
+#new add
+def auto_learn(self, parsed_json, rule_hits):
+        """
+        通过简单启发式的方法，自动从 parsed_json 中提取新的 signatures。
+        """
+        text = json.dumps(parsed_json).lower()
+
+        # 例：从 Nmap 结构中抓出服务名、banner、protocol
+        keywords = []
+
+        # 1) 抽取服务名
+        for host in parsed_json.get("hosts", []):
+            for port in host.get("ports", []):
+                service = port.get("service")
+                if service:
+                    keywords.append(service.lower())
+
+                banner = port.get("banner")
+                if banner:
+                    keyword    s.append(banner[:50].lower())  # 限制长度
+
+        # 2) 抽取所有 unique 字段名
+        for key in parsed_json.keys():
+            keywords.append(key.lower())
+
+        # 3) 去重
+        keywords = list(set(keywords))
+
+        # 4) 加入 KB（排除已命中规则相关的词）
+        for kw in keywords:
+            self.kb.add_signature(kw)
