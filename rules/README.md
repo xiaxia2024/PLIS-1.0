@@ -12,8 +12,9 @@
 | smb.yml | SMB 协议漏洞规则 |
 
 🟦 Web 漏洞集（Web Vulnerabilities）
-
+___________________________________________
 待补充
+
 🟦 network
 ```
  network/
