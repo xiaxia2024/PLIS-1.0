@@ -2,7 +2,6 @@ import os
 import yaml
 import re
 import json
-#from kb.kb import KnowledgeBase
 
 class RuleEngine:
     def __init__(self, rules_dir="rules"):
