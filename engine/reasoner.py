@@ -76,7 +76,7 @@ class Reasoner:
     # -------------------------------------------------------
     # 对外入口：生成完整 JSON 输出
     # -------------------------------------------------------
-    def build_machine_output(self, parsed_json, rule_hits):
+    def build_machine_output(self, parsed_json, rule_hits, target="unknown"):
         reasoning = self.generate_reasoning(parsed_json, rule_hits)
 
         machine = {
