@@ -31,7 +31,7 @@ def auto_select_parser(log_text):
         return "gobuster"
     # dirsearch 的典型特征：
     if "[200]" in log_text and "dirsearch" in log_text.lower():
-        return "dirsearch
+        return "dirsearch"
 
     return "unknown"
 
