@@ -100,7 +100,9 @@ class Engine:
         reasoner = Reasoner()
         self.reasoning_output = reasoner.build_machine_output(
             parsed_json=self.parsed_json,
-            rule_hits=self.rule_hits,
+            rule_engine = RuleEngine(rules_dir="rules"),
+            rule_hits = rule_engine.apply_rules(parsed_json),
+
             target=self.parsed_json.get("target", "unknown")
         )
 
