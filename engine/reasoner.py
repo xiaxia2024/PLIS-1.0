@@ -80,8 +80,8 @@ class Reasoner:
         reasoning = self.generate_reasoning(parsed_json, rule_hits)
 
         machine = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "targets": parsed_json.get("targets", parsed_json.get("ip", "")),
+            "target": target,
+            "generated_at": datetime.utcnow().isoformat() + "Z",
             "rules_triggered": len(rule_hits),
             "reasoning": reasoning,
         }
