@@ -11,6 +11,8 @@ from engine.rule_engine import RuleEngine
 from engine.reasoner import Reasoner
 from renderer.output_renderer import OutputRenderer
 from kb.kb import KnowledgeBase
+from parse.gobuster_parser import GobusterParser
+from parse.dirsearch_parser import DirsearchParser
 
 
 # ============================================================
@@ -24,11 +26,14 @@ def auto_select_parser(log_text):
     # Nmap 的典型特征：
     if "Nmap scan report" in log_text or "/tcp" in log_text:
         return "nmap"
+    # Gobuster 的典型特征：
+    if "Gobuster" in log_text or "(Status:" in log_text: 
+        return "gobuster"
+    # dirsearch 的典型特征：
+    if "[200]" in log_text and "dirsearch" in log_text.lower():
+        return "dirsearch
 
-    # 未来你可以不断扩展 ↓
-    # if "Gobuster" in log_text: return "gobuster"
-
-    return "nmap"  # 默认走 nmap
+    return "unknown"
 
 
 # ============================================================
@@ -69,8 +74,14 @@ class Engine:
 
         if parser_type == "nmap":
             self.parser = NmapParser(raw_log)
+
+        elif parser_type == "gobuster":
+            self.parser = GobusterParser(raw_log)
+        elif parser_tyep == "dirsearch":
+            self.parser = DirsearchParser(raw_log)
+
         else:
-            raise ValueError("未知日志类型，无法解析")
+            raise ValueError("未知日志类型，无法解析“）
 
         # --------------------------------------------
         # Step 3. parser 输出结构化 JSON
@@ -96,14 +107,7 @@ class Engine:
         # --------------------------------------------
         # Step 5.6. 自动学习阶段(new add)
         # --------------------------------------------
-        self.result = {
-            "parsed": parsed_json,
-            "rule_hits": rule_hits,
-            "reasoning": explanations
-        }
-        self.auto_learn(parsed_json, rule_hits)
-
-        return self.result
+        self.auto_learn(self.parsed_json, self.rule_hits)
 
         # --------------------------------------------
         # Step 6. Renderer 输出
@@ -120,14 +124,32 @@ class Engine:
         with open("report.md", "w", encoding="utf-8") as f:
             f.write(md_out)
 
-        print("✔ 输出已生成：machine.json + report.md")
-
-        self.final_output = {
-            "json": json_out,
-            "markdown": md_out
+        return {
+            "parsed": self.parsed_json,
+            "rule_hits": self.rule_hits,
+            "reasoning": self.reasoning_output
         }
 
-        return self.final_output
+    def auto_learn(self, parsed_json, rule_hits):
+        keywords = []
+
+        for host in parsed_json.get("hosts", []):
+            for port in host.get("ports", []):
+                service = port.get("service")
+                if service:
+                    keywords.append(service.lower())
+
+                banner = port.get("banner")
+                if banner:
+                    keywords.append(banner[:50].lower())
+
+        for key in parsed_json.keys():
+            keywords.append(key.lower())
+
+        keywords = set(keywords)
+
+        for kw in keywords:
+            self.kb.add_signature(kw)
 
 
 # ============================================================
@@ -143,35 +165,3 @@ if __name__ == "__main__":
 
     engine = Engine(log_file)
     engine.run()
-
-#new add
-def auto_learn(self, parsed_json, rule_hits):
-        """
-        通过简单启发式的方法，自动从 parsed_json 中提取新的 signatures。
-        """
-        text = json.dumps(parsed_json).lower()
-
-        # 例：从 Nmap 结构中抓出服务名、banner、protocol
-        keywords = []
-
-        # 1) 抽取服务名
-        for host in parsed_json.get("hosts", []):
-            for port in host.get("ports", []):
-                service = port.get("service")
-                if service:
-                    keywords.append(service.lower())
-
-                banner = port.get("banner")
-                if banner:
-                    keyword    s.append(banner[:50].lower())  # 限制长度
-
-        # 2) 抽取所有 unique 字段名
-        for key in parsed_json.keys():
-            keywords.append(key.lower())
-
-        # 3) 去重
-        keywords = list(set(keywords))
-
-        # 4) 加入 KB（排除已命中规则相关的词）
-        for kw in keywords:
-            self.kb.add_signature(kw)
