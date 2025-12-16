@@ -1,0 +1,15 @@
+[
+  {
+    "id": "auto_web_path_admin",
+    "pattern_type": "path",
+    "pattern": "/admin",
+    "context": "web_enum",
+    "severity": "medium",
+    "confidence": 0.65,
+    "evidence_count": 3,
+    "source": "auto-learn",
+    "first_seen": "2025-01-01",
+    "last_seen": "2025-01-10",
+    "enabled": true
+  }
+]
