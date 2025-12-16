@@ -1,116 +1,88 @@
 import os
 import yaml
-import re
 import json
+import re
+from kb.kb import KnowledgeBase
+
 
 class RuleEngine:
-    def __init__(self, rules_dir="rules"):
+    def __init__(self, rules_dir="rules", kb_path="kb/patterns.json"):
         self.rules_dir = rules_dir
-        self.rules = self.load_all_rules()
 
-    # -------------------------------------------------------
-    # 递归载入 YAML 规则
-    # -------------------------------------------------------
+        # 1. 人工编写的静态规则
+        self.static_rules = self.load_all_rules()
+
+        # 2. 知识库（自动学习）
+        self.kb = KnowledgeBase(kb_path)
+
+        # 3. 从 KB 生成的动态规则
+        self.dynamic_rules = self.load_dynamic_rules()
+
+    # ----------------------------------------
+    # 加载 rules/ 下的 YAML 静态规则
+    # ----------------------------------------
     def load_all_rules(self):
-        loaded = []
-        for root, dirs, files in os.walk(self.rules_dir):
+        rules = []
+
+        for root, _, files in os.walk(self.rules_dir):
             for file in files:
-                if file.endswith(".yml") or file.endswith(".yaml"):
+                if file.endswith((".yml", ".yaml")):
                     path = os.path.join(root, file)
                     with open(path, "r", encoding="utf-8") as f:
-                        data = yaml.safe_load(f) or []
-
-                        # 文件格式情况处理
-                        if isinstance(data, dict) and "rules" in data:
-                            loaded.extend(data["rules"])
-                        elif isinstance(data, list):
-                            loaded.extend(data)
+                        data = yaml.safe_load(f)
+                        if isinstance(data, list):
+                            rules.extend(data)
                         elif isinstance(data, dict):
-                            loaded.append(data)
+                            rules.append(data)
 
-        return loaded
+        return rules
 
-    # -------------------------------------------------------
-    # 稳健地 Flatten 文本
-    # -------------------------------------------------------
-    def flatten_text(self, obj):
-        if isinstance(obj, dict):
-            return " ".join(self.flatten_text(v) for v in obj.values())
-        elif isinstance(obj, list):
-            return " ".join(self.flatten_text(i) for i in obj)
-        return str(obj)
+    # ----------------------------------------
+    # 从 KB 中生成“动态规则”
+    # ----------------------------------------
+    def load_dynamic_rules(self):
+        rules = []
 
-    # -------------------------------------------------------
-    # 简单关键字匹配
-    # -------------------------------------------------------
-    def match(self, text):
-        matches = []
-        txt = text.lower()
+        for p in self.kb.patterns:
+            if not p.get("enabled", True):
+                continue
 
-        for rule in self.rules:
-            patterns = rule.get("patterns", [])
-            if isinstance(patterns, str):
-                patterns = [patterns]
+            rules.append({
+                "id": p["id"],
+                "name": f"[AUTO] {p['pattern']}",
+                "severity": p.get("severity", "low"),
+                "patterns": [p["pattern"]],
+                "confidence": p.get("confidence", 0.5),
+                "source": "knowledge_base"
+            })
 
-            for p in patterns:
-                if p.lower() in txt:
-                    matches.append(rule)
-                    break
-        return matches
+        return rules
 
-    # -------------------------------------------------------
-    # 完整规则引擎
-    # -------------------------------------------------------
+    # ----------------------------------------
+    # 规则判定入口
+    # ----------------------------------------
     def apply_rules(self, parsed_json):
         results = []
-        text_raw = self.flatten_text(parsed_json).lower()
+        text = json.dumps(parsed_json).lower()
 
-        for rule in self.rules:
-            rule_id = rule.get("id", rule.get("name", "Unknown"))
-            name = rule.get("name", "Unnamed Rule")
-            severity = rule.get("severity", "info")
-            description = rule.get("description", "")
+        all_rules = self.static_rules + self.dynamic_rules
+
+        for rule in all_rules:
             evidence = []
 
-            # patterns
-            patterns = rule.get("patterns", [])
-            if isinstance(patterns, str):
-                patterns = [patterns]
-
-            # regex
-            regex_patterns = rule.get("regex", [])
-            if isinstance(regex_patterns, str):
-                regex_patterns = [regex_patterns]
-
-            # hints
-            hints = rule.get("hints", [])
-            if isinstance(hints, str):
-                hints = [hints]
-
-            # match
-            for p in patterns:
-                if p.lower() in text_raw:
-                    evidence.append(f"keyword: {p}")
-
-            for r in regex_patterns:
-                try:
-                    if re.search(r, text_raw):
-                        evidence.append(f"regex: {r}")
-                except re.error:
-                    continue
-
-            for h in hints:
-                if h.lower() in text_raw:
-                    evidence.append(f"hint: {h}")
+            for p in rule.get("patterns", []):
+                if p.lower() in text:
+                    evidence.append(p)
 
             if not evidence:
                 continue
 
             results.append({
-                "id": rule_id,
-                "name": name,
-                "severity": severity,
-                "description": description,
+                "id": rule.get("id"),
+                "name": rule.get("name"),
+                "severity": rule.get("severity"),
+                "confidence": rule.get("confidence", 0.5),
+                "source": rule.get("source", "static"),
                 "evidence": evidence
             })
 
