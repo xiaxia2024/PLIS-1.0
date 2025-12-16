@@ -46,24 +46,18 @@ class RuleEngine:
     # ⭐ 关键：KB → 动态规则（你问的就是这里）
     # --------------------------------------------------
     def load_dynamic_rules(self):
-        """
-        将 KB 中学习到的 pattern 转换为 RuleEngine 可用的规则
-        """
         rules = []
 
-        for p in self.kb.patterns:
-            # 允许人工关闭某些自动规则
-            if not p.get("enabled", True):
-                continue
-
-            rules.append({
-                "id": p.get("id"),
-                "name": f"[AUTO] Pattern detected: {p.get('pattern')}",
-                "severity": p.get("severity", "low"),
-                "patterns": [p.get("pattern")],
-                "confidence": p.get("confidence", 0.5),
-                "source": "knowledge_base",
-                "context": p.get("context", "unknown")
+    for sig in self.kb.get_signatures():
+        rules.append({
+            "id": f"KB-{sig}",
+            "name": f"[AUTO] Learned pattern: {sig}",
+            "severity": "info",
+            "patterns": [sig],
+            "confidence": 0.5,
+            "source": "knowledge_base",
+            "context": "auto-learned"
+        })
             })
 
         return rules
