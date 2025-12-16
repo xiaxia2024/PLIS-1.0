@@ -1,47 +1,57 @@
 import re
+from schema.web_enum_schema import create_endpoint, create_web_enum_result
+
 
 class GobusterParser:
-    def __init__(self, raw_text):
-        self.raw = raw_text
+    def __init__(self, raw_log: str, base_url: str = "http://unknown"):
+        self.raw = raw_log
+        self.base_url = base_url
 
     def parse(self):
-        results = {
-            "scanner": "gobuster",
-            "paths": [],
-            "interesting_paths": [],
-            "parameters": [],
-            "status_codes": {}
-        }
+        endpoints = []
+
+        # Gobuster 行示例：
+        # /admin (Status: 301) [Size: 0]
+        pattern = re.compile(
+            r"(?P<path>/\S+)\s+\(Status:\s+(?P<status>\d+)\)\s+\[Size:\s+(?P<size>\d+)\]"
+        )
 
         for line in self.raw.splitlines():
-            # /admin (Status: 301) [Size: 0]
-            m = re.search(r"(/[\w\-/\.]+)\s+\(Status:\s*(\d+)\)", line)
+            m = pattern.search(line)
             if not m:
                 continue
 
-            path = m.group(1)
-            status = int(m.group(2))
+            status = int(m.group("status"))
+            size = int(m.group("size"))
 
-            entry = {
-                "path": path,
-                "status": status
-            }
+            tags = []
+            confidence = 0.5
 
-            results["paths"].append(entry)
+            if status == 200:
+                tags.append("accessible")
+                confidence = 0.9
+            elif status in (301, 302):
+                tags.append("redirect")
+                confidence = 0.6
+            elif status == 403:
+                tags.append("forbidden")
+                confidence = 0.7
 
-            # 统计状态码
-            results["status_codes"].setdefault(str(status), 0)
-            results["status_codes"][str(status)] += 1
+            endpoints.append(
+                create_endpoint(
+                    path=m.group("path"),
+                    base_url=self.base_url,
+                    status=status,
+                    length=size,
+                    redirect=status in (301, 302),
+                    tags=tags,
+                    confidence=confidence,
+                    source_tool="gobuster"
+                )
+            )
 
-            # 可疑路径规则（为 RuleEngine 准备）
-            if any(k in path.lower() for k in [
-                "admin", "upload", "backup", "test",
-                "old", "dev", "api", "include"
-            ]):
-                results["interesting_paths"].append(entry)
-
-            # 参数检测（LFI / SQLi / RFI）
-            if "?" in path:
-                results["parameters"].append(path)
-
-        return results
+        return create_web_enum_result(
+            target=self.base_url,
+            source="gobuster",
+            endpoints=endpoints
+        )
