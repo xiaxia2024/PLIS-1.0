@@ -1,44 +1,54 @@
 import re
+from schema.web_enum_schema import create_endpoint, create_web_enum_result
+
 
 class DirsearchParser:
-    def __init__(self, raw_text):
-        self.raw = raw_text
+    def __init__(self, raw_log: str, base_url: str = "http://unknown"):
+        self.raw = raw_log
+        self.base_url = base_url
 
     def parse(self):
-        results = {
-            "scanner": "dirsearch",
-            "paths": [],
-            "interesting_paths": [],
-            "parameters": [],
-            "status_codes": {}
-        }
+        endpoints = []
+
+        # 示例：
+        # [200] /admin/ - 3456B
+        pattern = re.compile(
+            r"\[(?P<status>\d+)\]\s+(?P<path>/\S+)(?:\s+-\s+(?P<size>\d+)B)?"
+        )
 
         for line in self.raw.splitlines():
-            # [200]  /admin/
-            m = re.search(r"\[(\d{3})\]\s+(/[^\s]+)", line)
+            m = pattern.search(line)
             if not m:
                 continue
 
-            status = int(m.group(1))
-            path = m.group(2)
+            status = int(m.group("status"))
+            size = int(m.group("size")) if m.group("size") else None
 
-            entry = {
-                "path": path,
-                "status": status
-            }
+            tags = []
+            confidence = 0.6
 
-            results["paths"].append(entry)
+            if status == 200:
+                tags.append("accessible")
+                confidence = 0.9
+            elif status == 403:
+                tags.append("forbidden")
+                confidence = 0.7
 
-            results["status_codes"].setdefault(str(status), 0)
-            results["status_codes"][str(status)] += 1
+            endpoints.append(
+                create_endpoint(
+                    path=m.group("path"),
+                    base_url=self.base_url,
+                    status=status,
+                    length=size,
+                    redirect=False,
+                    tags=tags,
+                    confidence=confidence,
+                    source_tool="dirsearch"
+                )
+            )
 
-            if any(k in path.lower() for k in [
-                "admin", "upload", "backup", "login",
-                "test", "dev", "api", "include"
-            ]):
-                results["interesting_paths"].append(entry)
-
-            if "?" in path:
-                results["parameters"].append(path)
-
-        return results
+        return create_web_enum_result(
+            target=self.base_url,
+            source="dirsearch",
+            endpoints=endpoints
+        )
