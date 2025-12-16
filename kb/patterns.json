@@ -1,15 +1,17 @@
-[
-  {
-    "id": "auto_web_path_admin",
-    "pattern_type": "path",
-    "pattern": "/admin",
-    "context": "web_enum",
-    "severity": "medium",
-    "confidence": 0.65,
-    "evidence_count": 3,
-    "source": "auto-learn",
-    "first_seen": "2025-01-01",
-    "last_seen": "2025-01-10",
-    "enabled": true
-  }
-]
+def load_dynamic_rules(self):
+    rules = []
+
+    for p in self.kb.patterns:
+        if not p.get("enabled"):
+            continue
+
+        rules.append({
+            "id": p["id"],
+            "name": f"[AUTO] Pattern detected: {p['pattern']}",
+            "severity": p.get("severity", "low"),
+            "patterns": [p["pattern"]],
+            "confidence": p.get("confidence", 0.5),
+            "source": "knowledge_base"
+        })
+
+    return rules
