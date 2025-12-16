@@ -86,23 +86,23 @@ class Engine:
         # --------------------------------------------
         # Step 3. parser 输出结构化 JSON
         # --------------------------------------------
-        parsed_json = parser.parse()
+        self.parsed_json = self.parser.parse()
 
         # --------------------------------------------
         # Step 4. Rule Engine 匹配漏洞
         # --------------------------------------------
         rule_engine = RuleEngine(self.rules_dir)
-        rule_hits = rule_engine.apply_rules(parsed_json)
+        self.rule_hits = rule_engine.apply_rules(self.parsed_json)
 
         # --------------------------------------------
         # Step 5. Reasoner 推理 WHY
         # --------------------------------------------
         reasoner = Reasoner()
         self.reasoning_output = reasoner.build_machine_output(
-            parsed_json=parsed_json,
-            rule_hits = rule_hits,
+            parsed_json = self.parsed_json,
+            rule_hits = self.rule_hits,
 
-            target=parsed_json.get("target", "unknown")
+            target = self.parsed_json.get("target", "unknown")
         )
 
         # --------------------------------------------
