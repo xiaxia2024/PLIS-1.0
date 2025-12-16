@@ -77,33 +77,32 @@ class Engine:
 
         elif parser_type == "gobuster":
             self.parser = GobusterParser(raw_log)
-        elif parser_tyep == "dirsearch":
+        elif parser_type == "dirsearch":
             self.parser = DirsearchParser(raw_log)
 
         else:
-            raise ValueError("未知日志类型，无法解析“）
+            raise ValueError("未知日志类型无法解析")
 
         # --------------------------------------------
         # Step 3. parser 输出结构化 JSON
         # --------------------------------------------
-        self.parsed_json = self.parser.parse()
+        parsed_json = parser.parse()
 
         # --------------------------------------------
         # Step 4. Rule Engine 匹配漏洞
         # --------------------------------------------
         rule_engine = RuleEngine(self.rules_dir)
-        self.rule_hits = rule_engine.apply_rules(self.parsed_json)
+        rule_hits = rule_engine.apply_rules(parsed_json)
 
         # --------------------------------------------
         # Step 5. Reasoner 推理 WHY
         # --------------------------------------------
         reasoner = Reasoner()
         self.reasoning_output = reasoner.build_machine_output(
-            parsed_json=self.parsed_json,
-            rule_engine = RuleEngine(rules_dir="rules"),
-            rule_hits = rule_engine.apply_rules(parsed_json),
+            parsed_json=parsed_json,
+            rule_hits = rule_hits,
 
-            target=self.parsed_json.get("target", "unknown")
+            target=parsed_json.get("target", "unknown")
         )
 
         # --------------------------------------------
