@@ -1,66 +1,66 @@
+# kb/kb.py
 import json
 import os
 from datetime import datetime
 
 
 class KnowledgeBase:
-    def __init__(self, kb_path="kb/patterns.json"):
+    """
+    PLIS Knowledge Base
+    - 存储自动学习到的漏洞特征（signatures）
+    - 为 RuleEngine 提供动态规则素材
+    """
+
+    def __init__(self, kb_path="kb/signatures.json"):
         self.kb_path = kb_path
-        self.patterns = self.load()
+        self.data = {
+            "updated_at": None,
+            "signatures": []
+        }
+        self._load()
 
-    def load(self):
-        if not os.path.exists(self.kb_path):
-            return []
-        with open(self.kb_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+    # --------------------------------------------------
+    # 加载 KB
+    # --------------------------------------------------
+    def _load(self):
+        if os.path.exists(self.kb_path):
+            try:
+                with open(self.kb_path, "r", encoding="utf-8") as f:
+                    self.data = json.load(f)
+            except Exception:
+                pass
 
-    def save(self):
+    # --------------------------------------------------
+    # 保存 KB
+    # --------------------------------------------------
+    def _save(self):
+        self.data["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        os.makedirs(os.path.dirname(self.kb_path), exist_ok=True)
+
         with open(self.kb_path, "w", encoding="utf-8") as f:
-            json.dump(self.patterns, f, indent=2)
+            json.dump(self.data, f, indent=4)
 
-    # -------------------------------------------------
-    # 自动学习：从 endpoints 中提炼“候选模式”
-    # -------------------------------------------------
-    def learn_from_web_enum(self, parsed_json):
-        if parsed_json.get("scan_type") != "web_enum":
-            return
+    # --------------------------------------------------
+    # 核心接口：新增 signature
+    # --------------------------------------------------
+    def add_signature(self, signature):
+        """
+        signature: str
+        """
+        if not signature:
+            return False
 
-        for ep in parsed_json.get("endpoints", []):
-            path = ep.get("path")
-            status = ep.get("status")
+        signature = signature.strip().lower()
 
-            if not path or status not in (200, 401, 403):
-                continue
+        if signature in self.data["signatures"]:
+            return False
 
-            self._add_or_update_pattern(
-                pattern=path,
-                context="web_enum",
-                severity="medium",
-                confidence=ep.get("confidence", 0.5)
-            )
+        self.data["signatures"].append(signature)
+        self._save()
+        return True
 
-        self.save()
-
-    def _add_or_update_pattern(self, pattern, context, severity, confidence):
-        now = datetime.utcnow().isoformat() + "Z"
-
-        for p in self.patterns:
-            if p["pattern"] == pattern and p["context"] == context:
-                p["evidence_count"] += 1
-                p["last_seen"] = now
-                p["confidence"] = min(0.95, p["confidence"] + 0.05)
-                return
-
-        self.patterns.append({
-            "id": f"auto_{context}_{pattern.strip('/').replace('/', '_')}",
-            "pattern_type": "path",
-            "pattern": pattern,
-            "context": context,
-            "severity": severity,
-            "confidence": confidence,
-            "evidence_count": 1,
-            "source": "auto-learn",
-            "first_seen": now,
-            "last_seen": now,
-            "enabled": True
-        })
+    # --------------------------------------------------
+    # 提供给 RuleEngine 的接口
+    # --------------------------------------------------
+    def get_signatures(self):
+        return self.data.get("signatures", [])
