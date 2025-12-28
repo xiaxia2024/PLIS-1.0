@@ -1,11 +1,11 @@
-plis_version: 1.0
+plis_version: 2.0
 
 metadata:
-  id: PLIS-WIN-KIOSK-001
+  id: PLIS-WIN-KIOSK-VulnEscape
   name: Windows Kiosk Composite Escape
   author: xiaohei
-  created: 2025-xx-xx
-  last_updated: 2025-xx-xx
+  created: 2025-12-28
+  last_updated: 2025-12-28
   difficulty: medium-high
   real_world_similarity: high
   stealth_level: high
