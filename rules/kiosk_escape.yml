@@ -1,0 +1,10 @@
+id: PRIM-KIOSK-ESCAPE
+category: kiosk_escape
+environment:
+  mode: kiosk
+prerequisites:
+  - keyboard_limited
+technique:
+  - allowed_key_combo
+outcome:
+  - arbitrary_execution
