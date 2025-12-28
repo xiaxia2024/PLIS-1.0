@@ -1,0 +1,117 @@
+plis_version: 1.0
+
+metadata:
+  id: PLIS-WIN-KIOSK-001
+  name: Windows Kiosk Composite Escape
+  author: xiaohei
+  created: 2025-xx-xx
+  last_updated: 2025-xx-xx
+  difficulty: medium-high
+  real_world_similarity: high
+  stealth_level: high
+
+environment:
+  os:
+    family: windows
+    version: unknown
+    arch: x64
+  mode: kiosk
+  restrictions:
+    keyboard_limited: true
+    allowed_keys:
+      - fn+command+x
+    application_whitelist: true
+  execution_context:
+    user: standard_user
+    uac: enabled
+    integrity_level: medium
+
+assets:
+  binaries:
+    - name: rdp.exe
+      path: "C:\\Program Files (x86)\\Remote Desktop Plus\\rdp.exe"
+      arch: x86
+      writable: false
+    - name: powershell.exe
+      path: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+      arch: x64
+      writable: true
+  files:
+    - name: profile.xml
+      type: credential_container
+      source: rdp_profile
+      sensitive: true
+
+attack_primitives:
+  - id: PRIM-KIOSK-ESCAPE
+    name: kiosk_escape_via_keyboard
+    category: kiosk_escape
+    prerequisites:
+      - keyboard_limited == true
+    technique:
+      - allowed_key_combo_execution
+    outcome:
+      - arbitrary_binary_execution
+
+  - id: PRIM-CRED-XML
+    name: credential_extraction_from_profile
+    category: credential_access
+    prerequisites:
+      - profile.xml exists
+    technique:
+      - xml_secret_parsing
+      - BulletsPassView_x64
+    outcome:
+      - cleartext_credentials
+
+  - id: PRIM-EXEC-RENAME
+    name: binary_rename_execution
+    category: execution_bypass
+    prerequisites:
+      - writable_binary_path
+      - application_whitelist == true
+    technique:
+      - rename_powershell_to_msedge
+    outcome:
+      - command_execution
+
+  - id: PRIM-PRIV-UAC
+    name: uac_bypass_runascs
+    category: privilege_escalation
+    prerequisites:
+      - admin_credentials
+      - uac_enabled
+    technique:
+      - RunasCs
+      - logon_type_8
+    outcome:
+      - high_integrity_shell
+
+attack_chain:
+  entry_point: PRIM-KIOSK-ESCAPE
+  steps:
+    - from: PRIM-KIOSK-ESCAPE
+      to: PRIM-CRED-XML
+    - from: PRIM-CRED-XML
+      to: PRIM-EXEC-RENAME
+    - from: PRIM-EXEC-RENAME
+      to: PRIM-PRIV-UAC
+  final_state:
+    privilege: administrator
+    shell: interactive_cmd
+
+classification:
+  plis_tags:
+    - kiosk_escape
+    - credential
+    - privilege_escalation
+  chain_type: composite_chain
+  detection_surface:
+    antivirus: low
+    edr: low
+    siem: minimal
+
+lessons_learned:
+  - legitimate_features_can_form_attack_chains
+  - kiosk_security_is_environmental_not_absolute
+  - credential_storage_in_profiles_is_high_risk
