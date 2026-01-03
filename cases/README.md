@@ -2,6 +2,8 @@
 
 // 从这个 Case 反推一个“纯净 Scenario”
 
+// 自动关联规则 correlation_rules
+
 ```
 win_kiosk_escape_VulnEscape.yml
 │   │      │            │
