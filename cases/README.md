@@ -2,9 +2,11 @@
 
 // 从这个 Case 反推一个“纯净 Scenario”
 
+```
 win_kiosk_escape_VulnEscape.yml
 │   │      │            │
 │   │      │            └─ 具体靶机名 / 实例名
 │   │      └─ 攻击类型 / 技术点
 │   └─ 场景 / 系统子域
 └─ 平台 / OS / 大类
+```
