@@ -1,9 +1,27 @@
-correlation_rules:
-  - id: CORR-ADCS-001
-    when:
-      - tls_common_name_contains: DC
-      - ldap_port_open: true
-    then:
-      - suggest:
-          - certipy_find
-          - adcs_enumeration
+rule:
+  id: CORR-ADCS-001
+  description: Infer possible ADCS ESC1 scenario from TLS and LDAP exposure
+
+  when:
+    - evidence:
+        type: tls
+        field: commonName
+        operator: contains
+        value: "DC"
+    - evidence:
+        type: port
+        field: ldap
+        operator: equals
+        value: open
+
+  infer:
+    - possible_scenarios:
+        - id: SC-ADCS-ESC1-001
+          confidence: medium
+
+  then:
+    suggest:
+      category: verification
+      actions:
+        - certipy find
+        - nxc ldap -M adcs
