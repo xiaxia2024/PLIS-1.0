@@ -1,0 +1,171 @@
+plis_version: 2.0
+
+metadata:
+  id: AKU-ADCS-ESC1-001
+  name: ADCS ESC1 Machine Account Retro
+  author: syareya
+  confidence: High
+  reusable: true
+
+target_profile:
+  platform: HackTheBox
+  system: ActiveDirectory
+  domain: retro.vl
+  dc_hint: DC.retro.vl
+  
+environment_fingerprint:
+  - id: ENV-TLS-001
+    source: nmap
+    probe: ssl-cert
+    port: 443 
+    extracted_fields:
+      - commonName
+    value:
+      commonName: DC.retro.vl
+    inference:
+      - role: DomainController
+      - domain: retro.vl
+    confidence: High
+
+
+attack_surface:
+  - SMB
+  - LDAP
+  - Kerberos
+  - ADCS
+  - RPC
+
+initial_access:
+  - id: IA-001
+    name: Pre-Created Computer Account
+    entry_type: credential
+    account: BANKING$
+    account_type: computer
+    indicator:
+      - account_name_endswith: "$"
+      - weak_or_default_password: true
+    exploitation:
+      technique: Machine Account Authentication
+      tools:
+        - smbclient
+        - nxc
+    impact: Domain foothold
+
+weaknesses:
+  - id: W-AD-001
+    category: Authentication Misconfiguration
+    name: Pre-Windows 2000 Computer Account Password Policy
+    description: >
+      Pre-created computer accounts may have predictable or resettable
+      passwords and allow RPC-based password changes.
+    affected_objects:
+      - computer_account
+    indicators:
+      - NT_STATUS_NOLOGON_WORKSTATION_TRUST_ACCOUNT
+      - rpc-samr accessible
+    exploitation:
+      primitive: Password Reset via SAMR
+      tools:
+        - changepasswd.py
+        - impacket
+    risk_level: High
+
+  - id: W-ADCS-ESC1
+    category: Certificate Services Misconfiguration
+    name: ESC1 - Enrollee Supplies Subject
+    description: >
+      Certificate template allows requester to specify subject and
+      authenticate as arbitrary domain user.
+    affected_objects:
+      - certificate_template
+    preconditions:
+      - domain_computer_can_enroll: true
+      - client_authentication_enabled: true
+    indicators:
+      - certipy_find: ESC1
+      - template: RetroClients
+    exploitation:
+      primitive: Certificate Impersonation
+      tools:
+        - certipy
+    impact: Domain Admin Impersonation
+    risk_level: Critical
+
+attack_chain:
+  - step: 1
+    from: BANKING$
+    action: SMB / RPC Authentication
+    result: Domain Access
+
+  - step: 2
+    from: BANKING$
+    action: Reset Computer Password (SAMR)
+    result: Valid Machine Trust
+
+  - step: 3
+    from: BANKING$
+    action: Enumerate ADCS
+    result: ESC1 Identified
+
+  - step: 4
+    from: BANKING$
+    action: Request Certificate as Administrator
+    result: administrator.pfx
+
+  - step: 5
+    from: administrator.pfx
+    action: LDAP Authentication
+    result: Full Domain Control
+
+
+privilege_escalation:
+  - id: PE-001
+    method: Certificate-Based Authentication
+    entry_point: administrator.pfx
+    protocol:
+      - Kerberos
+      - LDAP
+    tools:
+      - certipy auth
+    result: Domain Admin Access
+
+post_exploitation:
+  - id: POST-001
+    action: Dump Domain Credentials
+    technique: DCSync
+    tools:
+      - secretsdump.py
+    artifacts:
+      - ntds.dit
+      - krbtgt_hash
+    impact: Full Domain Compromise
+
+detection:
+  - id: DET-ADCS-001
+    signal: Abnormal Certificate Request
+    log_source:
+      - Security
+      - ADCS
+    indicators:
+      - subject_mismatch
+      - SID_500_in_certificate
+
+  - id: DET-AD-002
+    signal: Unauthorized Password Reset
+    log_source:
+      - SAMR
+      - RPC
+    indicators:
+      - machine_account_password_change
+
+
+summary:
+  root_cause:
+    - Weak computer account lifecycle management
+    - Insecure ADCS template (ESC1)
+  attacker_advantage:
+    - Machine accounts treated as low-risk identities
+    - Certificate trust bypasses password controls
+  enterprise_risk:
+    - Silent Domain Admin compromise
+    - No malware required
