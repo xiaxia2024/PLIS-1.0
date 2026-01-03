@@ -1,0 +1,9 @@
+correlation_rules:
+  - id: CORR-ADCS-001
+    when:
+      - tls_common_name_contains: DC
+      - ldap_port_open: true
+    then:
+      - suggest:
+          - certipy_find
+          - adcs_enumeration
