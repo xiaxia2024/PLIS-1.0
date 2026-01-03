@@ -10,3 +10,5 @@ win_kiosk_escape_VulnEscape.yml
 │   └─ 场景 / 系统子域
 └─ 平台 / OS / 大类
 ```
+
+//machine：Machine Account（计算机账户）；computer account in Active Directory
