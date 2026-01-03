@@ -2,7 +2,7 @@
 
 // 从这个 Case 反推一个“纯净 Scenario”
 
-// 自动关联规则 correlation_rules
+// 可执行联动规则 correlation_rules
 
 ```
 win_kiosk_escape_VulnEscape.yml
@@ -14,3 +14,13 @@ win_kiosk_escape_VulnEscape.yml
 ```
 
 //machine：Machine Account（计算机账户）；computer account in Active Directory
+
+```
+Evidence
+   ↓
+Correlation Rules  
+   ↓
+Scenario Activated
+   ↓
+Action / Suggestion
+```
