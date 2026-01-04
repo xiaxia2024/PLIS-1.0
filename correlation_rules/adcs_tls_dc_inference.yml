@@ -16,7 +16,7 @@ rule:
 
   infer:
     - possible_scenarios:
-        - id: SC-ADCS-ESC1-001
+        - id: SC-ADCS-ESC1-VIABLE
           confidence: medium
 
   then:
