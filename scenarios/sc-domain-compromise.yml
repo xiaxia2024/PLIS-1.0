@@ -1,0 +1,6 @@
+scenario:
+  id: SC-DOMAIN-COMPROMISE
+  name: Full Active Directory domain compromise
+  description: >
+    Attacker likely has or will soon obtain domain-level privileges.
+  impact_level: critical
