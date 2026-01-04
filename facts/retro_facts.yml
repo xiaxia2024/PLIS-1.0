@@ -1,0 +1,53 @@
+facts:
+  host:
+    fqdn: DC.retro.vl
+    hostname: DC
+    domain: retro.vl
+    role: DomainController
+    os:
+      family: Windows
+      build: 10.0.20348
+    confidence: High
+
+  services:
+    ldap:
+      exposed: true
+      secure: true
+      ports: [389, 636, 3268, 3269]
+    kerberos:
+      exposed: true
+      port: 88
+    smb:
+      exposed: true
+      signing_required: true
+    rdp:
+      exposed: true
+
+  certificates:
+    tls:
+      common_name: DC.retro.vl
+      san:
+        - DC.retro.vl
+      reused_across_services: true
+      issuer: retro-DC-CA
+
+  adcs:
+    present: true
+    ca_name: retro-DC-CA
+    templates:
+      RetroClients:
+        enrollee_supplies_subject: true
+        client_authentication: true
+        enroll_groups:
+          - Domain Computers
+        vulnerability:
+          esc1: true
+
+  accounts:
+    machine_accounts:
+      banking$:
+        authenticated: true
+        password_strength: weak
+    user_accounts:
+      trainee:
+        password_shared: true
