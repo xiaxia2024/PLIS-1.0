@@ -1,0 +1,7 @@
+scenario:
+  id: SC-ADCS-ESC1-VIABLE
+  name: ADCS ESC1 conditions likely satisfied
+  description: >
+    Certificate templates allow authentication and enrollment
+    with insufficient restrictions, making ESC1 exploitation possible.
+  impact_level: high
