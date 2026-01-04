@@ -3,16 +3,8 @@ rule:
   description: Infer possible ADCS ESC1 scenario from TLS and LDAP exposure
 
   when:
-    - evidence:
-        type: tls
-        field: commonName
-        operator: contains
-        value: "DC"
-    - evidence:
-        type: port
-        field: ldap
-        operator: equals
-        value: open
+    - host.role == DomainController
+    - services.ldap.exposed == true
 
   infer:
     - possible_scenarios:
