@@ -1,0 +1,7 @@
+scenario:
+  id: SC-ADCS-SERVICE-EXPOSED
+  name: ADCS service exposed in domain
+  description: >
+    Active Directory Certificate Services is reachable and
+    can be enumerated by an attacker.
+  impact_level: medium
