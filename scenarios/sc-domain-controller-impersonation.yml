@@ -1,0 +1,7 @@
+scenario:
+  id: SC-DC-IMPERSONATION-POSSIBLE
+  name: Domain Controller impersonation via certificates
+  description: >
+    Attacker may be able to request certificates that allow
+    impersonation of a domain controller account.
+  impact_level: critical
