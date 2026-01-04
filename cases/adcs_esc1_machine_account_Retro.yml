@@ -14,12 +14,13 @@ target_profile:
   dc_hint: DC.retro.vl
   
 environment_fingerprint:
-  - id: ENV-TLS-001
+  - id: ENV-TLS-DC-CERT
     source: nmap
     probe: ssl-cert
-    port: 443 
+    scope: host 
     extracted_fields:
       - commonName
+      - subjectAltName
     value:
       commonName: DC.retro.vl
     inference:
