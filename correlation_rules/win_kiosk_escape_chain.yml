@@ -1,28 +1,51 @@
 rule_id: CORR-WIN-KIOSK-ESCAPE-CHAIN
-type: attack_chain_correlation
-description: >
-Correlates multiple attack primitives observed on a Windows Kiosk system
-to identify a compound exploitation chain resulting in full compromise.
+type: correlation_rule
+severity: critical
 
-conditions:
+description: >
+Detects a compound exploitation chain on Windows Kiosk systems by
+correlating multiple attack primitives that together imply full compromise.
+
+when:  # ① Evidence 层
+environment:
+os: windows
+mode: kiosk
+evidence:
 all:
 - primitive_observed: PRIM-KIOSK-ESCAPE
 - primitive_observed: PRIM-CREDENTIAL-FROM-PROFILE
 - primitive_observed: PRIM-UAC-BYPASS-RUNAS
 
-constraints:
-environment:
-os: windows
-mode: kiosk
+logic:  # ② Correlation 逻辑（可扩展）
+type: ordered_chain
+rationale:
+- kiosk escape enables arbitrary execution
+- execution enables credential access
+- recovered credentials enable UAC bypass
 
+infer:  # ③ Scenario 激活
+activate_scenario: SCN-WIN-KIOSK-ESCAPE-CHAIN
 classification:
 chain_type: compound
-severity: critical
-label:
+confidence: high
+tags:
 - kiosk_escape
 - credential
 - privilege_escalation
 
-outcome:
+then:  # ④ Action / Suggestion 层
+assessment:
+result: full_system_compromise
+impact:
+- kiosk_restriction_bypass
+- credential_compromise
+- administrative_control
 
-* full_system_compromise
+suggestions:
+defensive:
+- enforce hash-based allowlisting
+- disable credential storage in kiosk applications
+- restrict non-interactive admin logons
+offensive:
+- pursue lateral movement
+- enumerate additional credential stores
