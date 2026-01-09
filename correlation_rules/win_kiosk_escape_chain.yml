@@ -1,0 +1,28 @@
+rule_id: CORR-WIN-KIOSK-ESCAPE-CHAIN
+type: attack_chain_correlation
+description: >
+Correlates multiple attack primitives observed on a Windows Kiosk system
+to identify a compound exploitation chain resulting in full compromise.
+
+conditions:
+all:
+- primitive_observed: PRIM-KIOSK-ESCAPE
+- primitive_observed: PRIM-CREDENTIAL-FROM-PROFILE
+- primitive_observed: PRIM-UAC-BYPASS-RUNAS
+
+constraints:
+environment:
+os: windows
+mode: kiosk
+
+classification:
+chain_type: compound
+severity: critical
+label:
+- kiosk_escape
+- credential
+- privilege_escalation
+
+outcome:
+
+* full_system_compromise
