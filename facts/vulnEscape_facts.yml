@@ -1,0 +1,29 @@
+facts_id: FACT-WIN-KIOSK-ENV
+scope: environment
+description: >
+Environmental facts observed on a Windows system operating in Kiosk mode.
+
+facts:
+os:
+family: windows
+kiosk_mode: true
+
+input:
+keyboard_limited: true
+mouse_available: limited
+
+application:
+allowed_browser_only: true
+allowed_binary_name_known: true
+
+execution:
+execution_restricted: true
+arbitrary_execution_after_escape: true
+
+credential:
+local_profile_present: true
+recoverable_credentials: true
+
+privilege:
+uac_enabled: true
+user_is_local_admin: true
