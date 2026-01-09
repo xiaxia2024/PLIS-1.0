@@ -4,6 +4,8 @@
 
 // 可执行联动规则 correlation_rules
 
+//facts 环境状态
+
 Case → Scenario → Rule
 ```
 win_kiosk_escape_VulnEscape.yml
