@@ -1,0 +1,41 @@
+scenario_id: SCN-WIN-KIOSK-ESCAPE-CHAIN
+name: Windows Kiosk Escape with Post-Execution Chain
+description: >
+A reusable attack scenario describing how a Windows system configured
+in Kiosk (Assigned Access) mode can be escaped via an allowed application,
+leading to arbitrary execution, credential access, and potential
+privilege escalation.
+
+target:
+os: windows
+environment:
+mode: kiosk
+
+attack_chain:
+
+- stage: kiosk_escape
+  primitive: PRIM-KIOSK-ESCAPE
+  goal: escape_application_restriction
+  outcome:
+
+  - arbitrary_execution
+
+- stage: credential_access
+  primitive: PRIM-CREDENTIAL-FROM-PROFILE
+  goal: recover_local_credentials
+  outcome:
+
+  - plaintext_credentials
+
+- stage: privilege_escalation
+  primitive: PRIM-UAC-BYPASS-RUNAS
+  goal: obtain_elevated_execution
+  outcome:
+
+  - elevated_execution
+
+impact:
+
+- kiosk_restriction_bypass
+- credential_compromise
+- full_administrative_control
